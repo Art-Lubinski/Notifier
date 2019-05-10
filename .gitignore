@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+test-baf9445cfdbf.json
+credentials.py
 __pycache__/
 *.py[cod]
 *$py.class

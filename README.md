@@ -6,7 +6,7 @@ This program written for Proxy\VPN provider which used to heavily rely on manual
 
 ### What can it do?
 - Keeps track of sold lines every day. Employees used to write daily sales report.
-- Keeps track of list of broken lines and sets priority. Once a week employee made broken lines report and set priorities to fix them.
+- Keeps track of list of broken lines and sets fix priority. Once a week employee made broken lines report and set priorities to fix them.
 - Keeps track of lines that should be closed today. It was done by manally searching duedates in Google Spreadsheets.
 - Sends weekly and monthly Sold Lines Report.
 - Reminds customers about payment due date 3 and 1 day in advance.

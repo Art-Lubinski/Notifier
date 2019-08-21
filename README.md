@@ -2,7 +2,7 @@
 Programm helps send customer due date reminders, create various reports, notify about google sheets possible errors, control mobile data usage.
 
 ### Prerequisites
-This program written for Proxy\VPN provider which used to heavily rely on manual labour. Five employees managed more than four hundred computers in two Google Sheets tables "4G Servers" and "DSL Servers". Each column represents single computer and each row is technical (PC name, Team-Viewer ID, password, phone number and etc.) or clients info (email, name, due dates, price\plan and etc.) Large database and manual entrees led to inconsistency, additional mistakes and time to fix them.
+This program written for Proxy\VPN provider which used to heavily rely on manual labour. Five employees managed more than four hundred computers in two Google Sheets tables "4G Servers" and "DSL Servers". Each column represents single computer and each row is technical (PC name, Team-Viewer ID, password, phone number and etc.) or clients info (email, name, due dates, price\plan and etc.) Large database and manual entrees led to inconsistency and mistakes.
 
 ### What programm does?
 - Keeps track of sold lines every day. Employees used to write daily sales report.

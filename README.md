@@ -4,7 +4,7 @@ Programm helps send customer due date reminders, create various reports, notify 
 ### Prerequisites
 This program written for Proxy\VPN provider which used to heavily rely on manual labour. Five employees managed more than four hundred computers in two Google Sheets tables "4G Servers" and "DSL Servers". Each column represents single computer and each row is technical (PC name, Team-Viewer ID, password, phone number and etc.) or clients info (email, name, due dates, price\plan and etc.) Large database and manual entrees led to inconsistency and mistakes.
 
-### What programm does?
+### What can it do?
 - Keeps track of sold lines every day. Employees used to write daily sales report.
 - Keeps track of list of broken lines and sets priority. Once a week employee made broken lines report and set priorities to fix them.
 - Keeps track of lines that should be closed today. It was done by manally searching duedates in Google Spreadsheets.

@@ -5,6 +5,7 @@ import re
 current_dir = os.path.realpath(__file__)
 folder_path = current_dir[:-11] + "/Logs"
 daily_sales_path = folder_path + "/daily_sales.txt"
+print(daily_sales_path)
 
 
 def get_sales_report(from_date, to_date):

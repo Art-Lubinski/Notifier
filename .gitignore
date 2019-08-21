@@ -2,6 +2,13 @@
 test-baf9445cfdbf.json
 credentials.py
 __pycache__/
+Data/
+Logs/
+geckodriver.exe
+chromedriver.exe
+test.py
+Notifier-a4445923504c.json
+
 *.py[cod]
 *$py.class
 

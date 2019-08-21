@@ -15,7 +15,7 @@ This program written for Proxy\VPN provider which used to heavily rely on manual
 
 
 ### Result
-Programm starts at 12:01 am. When finished it sends report to manager, support department along with payment reminders for clients.
+Programm starts daily at 12:01 am. When finished it sends report to manager, support department along with payment reminders for clients.
 
 ### Libraries used
 - pandas

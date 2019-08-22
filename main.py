@@ -10,8 +10,9 @@ import usage
 import gspread
 
 gc = gspread.authorize(credentials.google_credentials)
-
 sh = gc.open(credentials.main_table)
+sh1 = gc.open(credentials.sold_lines)
+wks_sold_lines_table = sh1.worksheet(credentials.sheet_sold_lines)
 wks_main_table = sh.worksheet(credentials.sheet_name_4g)
 main_table_4g = wks_main_table.get_all_values()
 wks_main_table = sh.worksheet(credentials.sheet_name_dsl)
@@ -31,6 +32,7 @@ table_dsl = []
 due_date_in_two_days = datetime.date.today() + datetime.timedelta(days=2)
 due_date_today = datetime.date.today()
 due_date_yesturday = datetime.date.today() - datetime.timedelta(days=1)
+
 
 errors = db.check_errors(main_table_4g, main_table_dsl)
 problem_list = db.get_lines_by_status("broken", main_table_4g, main_table_dsl)
@@ -54,17 +56,17 @@ try:
     emails.send_daily_report(email_conn, errors, customers_to_close, problem_list, sold_today, sprint_less_used, sprint_most_used, shared_usage, success)
     if datetime.datetime.now().weekday() == 0:
         weekly_report_start_date = datetime.date.today() - datetime.timedelta(days=7)
-        table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl = reports.get_sales_report(weekly_report_start_date, due_date_yesturday)
+        table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl, table_purchase_CAN, table_renewed_CAN, table_purchase_AUS, table_renewed_AUS = reports.get_sales_report(weekly_report_start_date, due_date_yesturday)
         emails.send_sales_report(email_conn, weekly_report_start_date, due_date_yesturday, table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl,  "weekly")
     monthly_start_date = datetime.datetime(datetime.datetime.now().year, due_date_yesturday.month, 1)
     if datetime.datetime.now().day == 1:
         monthly_start_date = datetime.datetime(datetime.datetime.now().year, due_date_yesturday.month, 1)
-        table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl = reports.get_sales_report(monthly_start_date.date(), due_date_yesturday)
+        table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl, table_purchase_CAN, table_renewed_CAN, table_purchase_AUS, table_renewed_AUS = reports.get_sales_report(monthly_start_date.date(), due_date_yesturday)
+        reports.update_sold_lines(due_date_yesturday, wks_sold_lines_table, table_purchase_4g, table_purchase_dsl, table_purchase_CAN, table_purchase_AUS, "sold")
+        reports.update_sold_lines(due_date_yesturday, wks_sold_lines_table, table_renewed_4g, table_renewed_dsl, table_renewed_CAN, table_renewed_AUS, "renewed")
         emails.send_sales_report(email_conn, monthly_start_date, due_date_yesturday, table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl, "monthly")
     email_conn.quit()
 
 except smtplib.SMTPException:
     print("Connection to the server {0} has been failed for some reason..".format(credentials.server_username))
     logs.write_to_errors("Connection to the server {0} has been failed for some reason..".format(credentials.server_username))
-
-

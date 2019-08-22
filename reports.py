@@ -13,7 +13,13 @@ def get_sales_report(from_date, to_date):
     table_purchase_4g, table_renewed_4g = _sales_report(daily_sales, from_date, to_date, "^4G-.*$")
     daily_sales = open(daily_sales_path, "r")
     table_purchase_dsl, table_renewed_dsl = _sales_report(daily_sales, from_date, to_date, "DSL-.*$")
-    return table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl
+    daily_sales = open(daily_sales_path, "r")
+    table_purchase_CAN, table_renewed_CAN = _sales_report(daily_sales, from_date, to_date, "4G-CAN.*$")
+    daily_sales = open(daily_sales_path, "r")
+    table_purchase_AUS, table_renewed_AUS = _sales_report(daily_sales, from_date, to_date, "4G-AU1.*$")
+
+
+    return table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl, table_purchase_CAN, table_renewed_CAN, table_purchase_AUS, table_renewed_AUS
 
 
 def _sales_report(daily_sales, from_date, to_date, regex):
@@ -60,4 +66,51 @@ def _sales_report(daily_sales, from_date, to_date, regex):
                             table_renewed[2][2] = table_renewed[2][2] + 1
 
     return table_purchase, table_renewed
+
+
+def update_sold_lines(prev_month, wks_sold_lines_table, table_purchase_4g, table_purchase_dsl, table_purchase_CAN, table_purchase_AUS, type):
+    first_column = wks_sold_lines_table.col_values(1)
+
+    row1 = len(first_column) + 1
+    cell_list = wks_sold_lines_table.range('A{0}:AH{0}'.format(row1))
+
+    if len(table_purchase_4g) == 3:
+        table_purchase_4g = [["trial",0,0]] + table_purchase_4g
+        table_purchase_dsl = [["trial", 0, 0]] + table_purchase_dsl
+        table_purchase_CAN = [["trial", 0, 0]] + table_purchase_CAN
+        table_purchase_AUS = [["trial", 0, 0]] + table_purchase_AUS
+
+    def prep_list(values, data):
+        for n in range(0, 4):
+            revenue_4g = data[n][1]
+            lines_sold_4g = data[n][2]
+
+            values.append(lines_sold_4g)
+            values.append(revenue_4g)
+
+            if lines_sold_4g == 0:
+                mean = 0
+            else:
+                mean = revenue_4g / lines_sold_4g
+            values.append(mean)
+        return values
+
+    def prep_list_other(values, data):
+        for n in range(0, 4):
+            values.append(data[n][1])
+        return values
+
+    values = []
+
+    values.append(str(prev_month.strftime("%b %Y")))
+    values.append(type)
+    values = prep_list(values, table_purchase_dsl)
+    values = prep_list(values, table_purchase_4g)
+    values = prep_list_other(values, table_purchase_AUS)
+    values = prep_list_other(values, table_purchase_CAN)
+
+    for cell, value in zip(cell_list, values):
+        cell.value = value
+    wks_sold_lines_table.update_cells(cell_list)
+
 

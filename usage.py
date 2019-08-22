@@ -158,6 +158,10 @@ def update_table_wireless_accounts(provider_name, main_table_4g, provider_table,
                 number = "not found"
             if email == "" and if_panel == "1":
                 customer = "panel"
+            modem = modem.split()
+            if len(modem) == 0:
+                modem = ""
+            else: modem = modem[0]
             pc = {"phone": number, "pc_name": pc_name, "email": email, "customer": customer, "modem": modem}
             sprint_numbers_from_table.append(pc)
 
@@ -171,6 +175,7 @@ def update_table_wireless_accounts(provider_name, main_table_4g, provider_table,
     for phone, line, client, modem in zip(numbers, lines, clients, modems):
         line.value = "not found"
         client.value = ""
+        modem.value = ""
         if phone.value in credentials.special_lines:
             line.value = credentials.special_lines[phone.value]
         for pc in sprint_numbers_from_table:
@@ -181,4 +186,5 @@ def update_table_wireless_accounts(provider_name, main_table_4g, provider_table,
 
     wks.update_cells(lines)
     wks.update_cells(clients)
+    wks.update_cells(modems)
 

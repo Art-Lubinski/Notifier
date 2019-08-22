@@ -18,7 +18,6 @@ def get_sales_report(from_date, to_date):
     daily_sales = open(daily_sales_path, "r")
     table_purchase_AUS, table_renewed_AUS = _sales_report(daily_sales, from_date, to_date, "4G-AU1.*$")
 
-
     return table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl, table_purchase_CAN, table_renewed_CAN, table_purchase_AUS, table_renewed_AUS
 
 
@@ -84,7 +83,6 @@ def update_sold_lines(prev_month, wks_sold_lines_table, table_purchase_4g, table
         for n in range(0, 4):
             revenue_4g = data[n][1]
             lines_sold_4g = data[n][2]
-
             values.append(lines_sold_4g)
             values.append(revenue_4g)
 
@@ -100,10 +98,7 @@ def update_sold_lines(prev_month, wks_sold_lines_table, table_purchase_4g, table
             values.append(data[n][1])
         return values
 
-    values = []
-
-    values.append(str(prev_month.strftime("%b %Y")))
-    values.append(type)
+    values = [str(prev_month.strftime("%b %Y")), type]
     values = prep_list(values, table_purchase_dsl)
     values = prep_list(values, table_purchase_4g)
     values = prep_list_other(values, table_purchase_AUS)

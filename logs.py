@@ -29,15 +29,18 @@ statistics = open(statistics_path, "a")
 daily_sales = open(daily_sales_path, "a")
 sprint_usage = open(sprint_usage_path, "a")
 
+
 def write_to_log(message):
     timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
     message = str(timestamp.date()) + " " + message + "\n"
     logs.write(message)
 
+
 def write_to_errors(message):
     timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
     message = str(timestamp.date()) + " " + message + "\n"
     errors.write(message)
+
 
 def write_to_daily_sales(message):
     if credentials.mode == "prod":
@@ -45,10 +48,12 @@ def write_to_daily_sales(message):
         message = str(timestamp.date()) + " " + message + "\n"
         daily_sales.write(message)
 
+
 def write_to_statistics(message):
     timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
     message = str(timestamp.date()) + " " + message + "\n"
     statistics.write(message)
+
 
 def write_to_usage(message):
     if credentials.mode == "prod":

@@ -41,6 +41,7 @@ customers_to_close = db.get_customers(due_date_yesturday, main_table_4g, main_ta
 customers_due_date_today = db.get_customers(due_date_today, main_table_4g, main_table_dsl)
 customers_due_date_in_two_days = db.get_customers(due_date_in_two_days, main_table_4g, main_table_dsl)
 sprint_less_used, sprint_most_used, success, shared_usage = usage.check_data_usage(main_table_4g)
+verizon_usage, verizon_total_usage = usage.check_verizon_data_usage(main_table_4g)
 usage.update_table_wireless_accounts("ATT", main_table_4g, att_table, wks_att)
 usage.update_table_wireless_accounts("SPRINT", main_table_4g, sprint_table, wks_sprint)
 usage.update_table_wireless_accounts("VERIZON", main_table_4g, verizon_table, wks_verizon)
@@ -53,7 +54,7 @@ try:
     if credentials.mode == "prod" or credentials.mode == "test_all":
         emails.send_reminders(email_conn, customers_due_date_today, due_date_today)
         emails.send_reminders(email_conn, customers_due_date_in_two_days, due_date_in_two_days)
-    emails.send_daily_report(email_conn, errors, customers_to_close, problem_list, sold_today, sprint_less_used, sprint_most_used, shared_usage, success)
+    emails.send_daily_report(email_conn, errors, customers_to_close, problem_list, sold_today, sprint_less_used, sprint_most_used, shared_usage, success, verizon_usage, verizon_total_usage)
     if datetime.datetime.now().weekday() == 0:
         weekly_report_start_date = datetime.date.today() - datetime.timedelta(days=7)
         table_purchase_4g, table_renewed_4g, table_purchase_dsl, table_renewed_dsl, table_purchase_CAN, table_renewed_CAN, table_purchase_AUS, table_renewed_AUS = reports.get_sales_report(weekly_report_start_date, due_date_yesturday)

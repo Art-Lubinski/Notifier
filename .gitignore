@@ -2,6 +2,8 @@
 test-baf9445cfdbf.json
 credentials.py
 __pycache__/
+node_modules
+Accounts scraper
 Data/
 Logs/
 geckodriver.exe

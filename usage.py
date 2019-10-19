@@ -5,6 +5,10 @@ import pandas as pd
 import logs
 import time
 import datetime
+from Naked.toolshed.shell import execute_js
+import re
+import json
+import os
 
 gc = gspread.authorize(credentials.google_credentials)
 sh = gc.open(credentials.wireless_table)
@@ -22,11 +26,11 @@ def check_data_usage(main_table_4g):
     shared_total_usage = 0
 
     try:
-        driver = webdriver.Chrome(executable_path=r"C:\Program Files\Usage Tracker\chromedriver.exe")
+        driver = webdriver.Chrome(executable_path=r"C:\Program Files\Notifier\chromedriver.exe")
         # driver = webdriver.Firefox(executable_path=r"C:\Program Files\Usage Tracker\geckodriver.exe")
 
         try:
-            driver.get(("https://mysprint.sprint.com/mysprint/pages/sl/global/login.jsp?INTNAV=Header:SignInRegister"))
+            driver.get("https://mysprint.sprint.com/mysprint/pages/sl/global/login.jsp?INTNAV=Header:SignInRegister")
             username = driver.find_element_by_xpath("""//*[@id="txtLoginUsernameDL"]""")
             password = driver.find_element_by_xpath("""//*[@id="txtLoginPasswordDL"]""")
             username.send_keys(credentials.usernameSprint)
@@ -138,8 +142,8 @@ def check_data_usage(main_table_4g):
             df = pd.DataFrame.from_dict(data)
             df.set_index('name', inplace=True)
             df.sort_values('usage', ascending=False, inplace=True)
-            df_most_used = df.head(8)
-            df_less_used = df.tail(8)
+            df_most_used = df.head(10)
+            df_less_used = df.tail(10)
             dic_most_used = df_most_used.to_dict('index')
             dic_less_used = df_less_used.to_dict('index')
         except Exception as e:
@@ -152,7 +156,7 @@ def check_data_usage(main_table_4g):
 
 def update_table_wireless_accounts(provider_name, main_table_4g, provider_table, wks):
     sprint_numbers_from_table = []
-    for pc_name, provider, number, email, customer, if_panel, modem in zip(main_table_4g[1], main_table_4g[4], main_table_4g[17], main_table_4g[7], main_table_4g[6], main_table_4g[9],  main_table_4g[5]):
+    for pc_name, provider, number, email, customer, if_panel, modem, if_broken in zip(main_table_4g[1], main_table_4g[4], main_table_4g[17], main_table_4g[7], main_table_4g[6], main_table_4g[9],  main_table_4g[5], main_table_4g[10]):
         if provider == provider_name:
             if number == "":
                 number = "not found"
@@ -187,4 +191,49 @@ def update_table_wireless_accounts(provider_name, main_table_4g, provider_table,
     wks.update_cells(lines)
     wks.update_cells(clients)
     wks.update_cells(modems)
+
+
+def check_verizon_data_usage(main_table_4g):
+    os.chdir(r"C:\Program Files\Notifier")
+    success = execute_js(r"verizon_scraper.js")
+    lines = []
+    if success:
+        path1 = r"C:\Program Files\Notifier\Data\verizon_usage.txt"
+        path2 = r"C:\Program Files\Notifier\Data\verizon_lines_usage.json"
+        if os.path.exists(path1):
+            verizon_usage = open(path1, "r")
+            verizon_usage = verizon_usage.read().split()
+            if len(verizon_usage) <= 2:
+                verizon_usage = 0
+            os.remove(path1)
+        else:
+            verizon_usage = 0
+        if os.path.exists(path2):
+            temp = []
+            with open(r"C:\Program Files\Notifier\Data\verizon_lines_usage.json") as f:
+                data = json.load(f)
+                for n in data:
+                    num = n.get('name').replace('-', '')
+                    use = n.get('usage')
+                    use = re.sub("[^0-9.]", '', use)
+                    temp1 = {'num': num, 'use': use}
+                    temp.append(temp1)
+            os.remove(path2)
+
+            for pc_name, provider, number, email, is_panel in zip(main_table_4g[1], main_table_4g[4], main_table_4g[17], main_table_4g[7], main_table_4g[9]):
+                if provider == 'VERIZON':
+                    for n in temp:
+                        if number == n['num']:
+                            if email == "" and is_panel == "1":
+                                email = "panel"
+                            data = {'name': pc_name, 'email': email, 'usage': n['use']}
+                            lines.append(data)
+        else:
+            lines = 0
+
+    return lines, verizon_usage
+
+
+
+
 

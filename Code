@@ -1,8 +1,0 @@
-JS
-
-JQuiry
-Find CSV file
-$('a:contains(CSV)')[0].click()
-
-Find data 
-$('span.ng-binding.greenUsed').text()

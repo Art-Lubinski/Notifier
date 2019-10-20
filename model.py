@@ -6,7 +6,7 @@ import settings
 
 
 def get_account(index):
-    sheet = xlrd.open_workbook(r"C:\Program Files\Notifier\Accounts scraper\access_details.xls").sheet_by_index(index)
+    sheet = xlrd.open_workbook(settings.account_scraper_folder_path + "access_details.xls").sheet_by_index(index)
     accounts = []
     for row in range(sheet.nrows):
         temp = []

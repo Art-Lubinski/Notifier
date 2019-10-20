@@ -11,29 +11,25 @@ import os
 import re
 import json
 
-
-class credentials:
-    passwordSprint = "W663300w.1"
-    usernameSprint = "worldintercom1"
-chdriver_path = r"/Users/artlubinski/PycharmProjects/SprintScraper/chromedriver-2"
-
-conn = pyodbc.connect(r'DSN=DSLRENTALS;'
-                        'UID=Test;PWD=Mp2664311')
+conn = pyodbc.connect(settings.sqlconnection_string)
 cursor = conn.cursor()
+cursor.execute(r"SELECT TOP 1 * FROM UsageHistory ORDER BY ID DESC")
+last_update = cursor.fetchall()[0][2]
+print(last_update)
 
 
 def update_sprint_usage():
     print("SCRAPER: updating sprint data usage from account now...")
     success = False
-    last_update_sprint = open(r"/Users/artlubinski/PycharmProjects/Notifier/Data/last_update_sprint.txt", 'r')
-    if last_update_sprint.readline() != datetime.datetime.now().strftime("%m/%d/%y"):
+    if last_update != datetime.datetime.now().date():
+        print(f"SCRAPER: data usage updated last time {last_update}. Updating...")
         try:
-            driver = webdriver.Chrome(executable_path=chdriver_path)
+            driver = webdriver.Chrome(executable_path=settings.webdriver_path)
             try:
                 driver.get("https://mysprint.sprint.com/mysprint/pages/sl/global/login.jsp?INTNAV=Header:SignInRegister")
                 username = driver.find_element_by_xpath("""//*[@id="txtLoginUsernameDL"]""")
-                driver.find_element_by_xpath("""//*[@id="txtLoginPasswordDL"]""").send_keys(credentials.passwordSprint)
-                username.send_keys(credentials.usernameSprint)
+                driver.find_element_by_xpath("""//*[@id="txtLoginPasswordDL"]""").send_keys(settings.passwordSprint)
+                username.send_keys(settings.usernameSprint)
                 username.submit()
                 time.sleep(1)
                 driver.get("https://mysprint.sprint.com/mysprint/pages/secure/InterstitialCookieHandler?ICTarget=my.usage.usage.details&amp;INTNAV=ATG:HE:SeeAcctUsage")
@@ -55,13 +51,11 @@ def update_sprint_usage():
                 map_df = pd.DataFrame([[x[0], x[1]] for x in cursor.fetchall()], columns=["Number", 'ID']).set_index('Number')
                 usage_id_df = pd.merge(map_df, usage, left_index=True, right_index=True)
                 usage_id_df.reset_index(drop=True, inplace=True)
-                print(usage_id_df)
-                engine = sqlalchemy.create_engine("mssql+pyodbc://Test:Mp2664311@DSLRENTALS")
+                engine = sqlalchemy.create_engine(settings.sql_alchemy)
                 usage_id_df.to_sql("UsageHistory", engine, if_exists='append', index=False)
-                last_update_sprint = open(r"/Users/artlubinski/PycharmProjects/Notifier/Data/last_update_sprint.txt", 'w')
-                last_update_sprint.write(datetime.datetime.now().strftime("%m/%d/%y"))
                 success = True
                 driver.quit()
+                print("SCRAPER: Sprint data usage scrapped and database updated")
                 return success
             except Exception as e:
                 print(f"SCRAPER: some error raised inside Sprint account. Code: {e}")
@@ -77,13 +71,11 @@ def update_verizon_usage():
     success = False
     lines = 0
     verizon_usage = 0
-    last_update_sprint = open(settings.data_folder_path + 'last_update_verizon.txt', 'r')
-    if last_update_sprint.readline() != datetime.datetime.now().strftime("%m/%d/%y"):
+    if last_update != datetime.datetime.now().date():
         try:
             main_table_4g = model.Model.online.Main.Sheet4G().sheet.get_all_values()
-            success = execute_js(settings.folder_path+r"verizon_usage_scraper.js")
+            success = execute_js("verizon_usage_scraper.js")
             lines = []
-            verizon_usage = 0
             if success:
                 path1 = settings.data_folder_path + "verizon_usage.txt"
                 path2 = settings.data_folder_path + "verizon_lines_usage.json"
@@ -92,12 +84,10 @@ def update_verizon_usage():
                     verizon_usage = verizon_usage.read().split()
                     if len(verizon_usage) <= 2:
                         verizon_usage = 0
-                    os.remove(path1)
-                else:
-                    verizon_usage = 0
+                    #os.remove(path1)
                 if os.path.exists(path2):
                     temp = []
-                    with open(settings.data_folder_path + "verizon_lines_usage.json") as f:
+                    with open(path2) as f:
                         data = json.load(f)
                         for n in data:
                             num = n.get('name').replace('-', '')
@@ -105,8 +95,7 @@ def update_verizon_usage():
                             use = re.sub("[^0-9.]", '', use)
                             temp1 = {'num': num, 'use': use}
                             temp.append(temp1)
-                    os.remove(path2)
-
+                    #os.remove(path2)
                     for pc_name, provider, number, email, is_panel in zip(main_table_4g[1], main_table_4g[4], main_table_4g[17], main_table_4g[7], main_table_4g[9]):
                         if provider == 'VERIZON':
                             for n in temp:
@@ -116,8 +105,6 @@ def update_verizon_usage():
                                     data = {'name': pc_name, 'email': email, 'usage': n['use']}
                                     lines.append(data)
                     success = True
-                    last_update_verizon = open(settings.data_folder_path + 'last_update_verizon.txt', 'w')
-                    last_update_verizon.write(datetime.datetime.now().strftime("%m/%d/%y"))
                 else:
                     lines = 0
         except Exception as e:

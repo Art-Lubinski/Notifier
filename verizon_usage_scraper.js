@@ -54,7 +54,7 @@
         return console.log(err);
     }
 })
-fs.writeFile("C:\\Program Files\\Notifier\\Data\\verizon_lines_usage.json", JSON.stringify(teams,null,2), function(err) {
+fs.writeFile("C:\\Program Files\\Notifier_v2\\Data\\verizon_lines_usage.json", JSON.stringify(teams,null,2), function(err) {
 if(err) {
     return console.log(err);
 }

@@ -6,18 +6,23 @@ import sys
 # path
 __current_dir = os.path.realpath(__file__)
 folder_path = __current_dir[:-11]
-account_scraper_folder_path = folder_path + "/Accounts scraper/"
-data_folder_path = folder_path + "/Data/"
+account_scraper_folder_path = folder_path + "Accounts scraper/"
+data_folder_path = folder_path + "Data/"
+sqlconnection_string = r'DSN=DSLRENTALS; UID=Test;PWD=Mp2664311'
+webriver_path = r"/Users/artlubinski/PycharmProjects/SprintScraper/chromedriver-2"
+sql_alchemy = "mssql+pyodbc://Test:Mp2664311@DSLRENTALS"
 if sys.platform == "win32":
     folder_path = folder_path.replace("/","\\")
     account_scraper_folder_path = account_scraper_folder_path.replace("/","\\")
     data_folder_path = data_folder_path.replace("/", "\\")
-
+    sqlconnection_string = r'DRIVER={ODBC Driver 13 for SQL Server}; Server=tcp:192.168.0.197\WIN-JHM3H4KID52,1433;Database=Dslrentals;Trusted_connection=no;UID=Test;PWD=Mp2664311'
+    webdriver_path = r"C:\Program Files\Notifier_v2\chromedriver.exe"
+    sql_alchemy = "mssql+pyodbc://Test:Mp2664311@192.168.0.197:1433/Dslrentals?driver=ODBC+Driver+13+for+SQL+Server"
 
 # test_all - sends reminders and ALL emails to Art
 # test - sends emails to Art(except reminders). Doesnt write to log file
 # prod - production
-mode = "prod"
+mode = "test"
 
 # Google authorization
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -44,6 +49,7 @@ server_host = "gator4059.hostgator.com"
 server_port = 587
 notify_from_email = server_username
 to_email = ["artsiom.lubinsky@gmail.com"]
+
 
 # Sprint settings
 usernameSprint = "worldintercom1"

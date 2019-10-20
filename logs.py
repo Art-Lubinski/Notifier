@@ -31,40 +31,38 @@ balance_tracker = open(balance_tracker_path, "a")
 
 
 def write_to_log(message):
-    timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
-    message = str(timestamp.date()) + " " + message + "\n"
+    print(message)
+    date = datetime.datetime.now().strftime("%m/%d/%Y %I:%M %p")
+    message = date + " " + message + "\n"
     logs.write(message)
 
 
 def write_to_errors(message):
-    timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
-    message = str(timestamp.date()) + " " + message + "\n"
+    print(message)
+    date = datetime.datetime.now().strftime("%m/%d/%Y %I:%M %p")
+    message = date + " " + message + "\n"
     errors.write(message)
 
 
 def write_to_daily_sales(message):
+    print(message)
     if settings.mode == "prod":
         timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
         message = str(timestamp.date()) + " " + message + "\n"
         daily_sales.write(message)
 
 
-def write_to_statistics(message):
-    timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
-    message = str(timestamp.date()) + " " + message + "\n"
-    statistics.write(message)
-
-
 def write_to_usage(message):
+    print(message)
     if settings.mode == "prod":
-        timestamp = datetime.datetime.now()
-        message = str(timestamp.date()) + " " + message + "\n"
+        date = datetime.datetime.now().strftime("%m/%d/%Y %I:%M %p")
+        message = date + " " + message + "\n"
         sprint_usage.write(message)
 
 
 def write_to_balance_tracker(message):
+    print(message)
     date = datetime.datetime.now().strftime("%m/%d/%Y %I:%M %p")
     message = date + " " + message
     balance_tracker.write(message+"\n")
-    print(message)
 

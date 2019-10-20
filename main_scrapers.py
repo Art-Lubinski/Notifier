@@ -3,14 +3,14 @@ from xlwt import Workbook
 import re
 import logs
 import settings
-import accounts_scraper as scraper
+import account_scrapers as scraper
 from datetime import datetime
 import model
 logs = logs.write_to_balance_tracker
 
 # *** PROGRAM STARTS HERE *** #
 # SPECTRUM
-logs("INFO: program is running")
+logs("INFO: balance scrapers are running")
 
 # logs("INFO: scraping SPECTRUM")
 # logins = model.Model.local.AccessDetails.spectrum

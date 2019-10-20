@@ -1,7 +1,7 @@
 import os
 import datetime
 import sys
-import credentials
+import settings
 
 current_dir = os.path.realpath(__file__)
 
@@ -43,7 +43,7 @@ def write_to_errors(message):
 
 
 def write_to_daily_sales(message):
-    if credentials.mode == "prod":
+    if settings.mode == "prod":
         timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
         message = str(timestamp.date()) + " " + message + "\n"
         daily_sales.write(message)
@@ -56,7 +56,7 @@ def write_to_statistics(message):
 
 
 def write_to_usage(message):
-    if credentials.mode == "prod":
+    if settings.mode == "prod":
         timestamp = datetime.datetime.now()
         message = str(timestamp.date()) + " " + message + "\n"
         sprint_usage.write(message)

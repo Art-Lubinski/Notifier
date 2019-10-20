@@ -1,6 +1,6 @@
 import db
 import emails
-import credentials
+import settings
 import datetime
 import reports
 import calendar
@@ -9,21 +9,21 @@ import logs
 import usage
 import gspread
 
-gc = gspread.authorize(credentials.google_credentials)
-sh = gc.open(credentials.main_table)
-sh1 = gc.open(credentials.sold_lines)
-wks_sold_lines_table = sh1.worksheet(credentials.sheet_sold_lines)
-wks_main_table = sh.worksheet(credentials.sheet_name_4g)
+gc = gspread.authorize(settings.google_credentials)
+sh = gc.open(settings.main_table)
+sh1 = gc.open(settings.sold_lines)
+wks_sold_lines_table = sh1.worksheet(settings.sheet_sold_lines)
+wks_main_table = sh.worksheet(settings.sheet_name_4g)
 main_table_4g = wks_main_table.get_all_values()
-wks_main_table = sh.worksheet(credentials.sheet_name_dsl)
+wks_main_table = sh.worksheet(settings.sheet_name_dsl)
 main_table_dsl = wks_main_table.get_all_values()
 
-sh = gc.open(credentials.wireless_table)
-wks_sprint = sh.worksheet(credentials.sheet_sprint)
+sh = gc.open(settings.wireless_table)
+wks_sprint = sh.worksheet(settings.sheet_sprint)
 sprint_table = wks_sprint.get_all_values()
-wks_att = sh.worksheet(credentials.sheet_att)
+wks_att = sh.worksheet(settings.sheet_att)
 att_table = wks_att.get_all_values()
-wks_verizon = sh.worksheet(credentials.sheet_verizon)
+wks_verizon = sh.worksheet(settings.sheet_verizon)
 verizon_table = wks_verizon.get_all_values()
 
 table_4g = []
@@ -47,11 +47,11 @@ usage.update_table_wireless_accounts("SPRINT", main_table_4g, sprint_table, wks_
 usage.update_table_wireless_accounts("VERIZON", main_table_4g, verizon_table, wks_verizon)
 
 try:
-    email_conn = smtplib.SMTP(credentials.server_host, credentials.server_port)
+    email_conn = smtplib.SMTP(settings.server_host, settings.server_port)
     email_conn.ehlo()
     email_conn.starttls()
-    email_conn.login(credentials.server_username, credentials.server_password)
-    if credentials.mode == "prod" or credentials.mode == "test_all":
+    email_conn.login(settings.server_username, settings.server_password)
+    if settings.mode == "prod" or settings.mode == "test_all":
         emails.send_reminders(email_conn, customers_due_date_today, due_date_today)
         emails.send_reminders(email_conn, customers_due_date_in_two_days, due_date_in_two_days)
     emails.send_daily_report(email_conn, errors, customers_to_close, problem_list, sold_today, sprint_less_used, sprint_most_used, shared_usage, success, verizon_usage, verizon_total_usage)
@@ -69,5 +69,5 @@ try:
     email_conn.quit()
 
 except smtplib.SMTPException:
-    print("Connection to the server {0} has been failed for some reason..".format(credentials.server_username))
-    logs.write_to_errors("Connection to the server {0} has been failed for some reason..".format(credentials.server_username))
+    print("Connection to the server {0} has been failed for some reason..".format(settings.server_username))
+    logs.write_to_errors("Connection to the server {0} has been failed for some reason..".format(settings.server_username))

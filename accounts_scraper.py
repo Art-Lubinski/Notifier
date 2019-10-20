@@ -1,4 +1,3 @@
-import spreadsheets as sheets
 from selenium import webdriver
 import logs
 import time
@@ -7,7 +6,6 @@ import os
 import zipfile
 from selenium import webdriver
 import re
-reg = "received before .*"
 
 log = logs.write_to_balance_tracker
 
@@ -190,7 +188,7 @@ def scrape_verizon_dsl(username, password, secret, line):
             status = "Active"
             if "have been suspended" in acc_notice:
                 status = "Suspended"
-                dis_date = re.findall(reg, acc_notice)
+                dis_date = re.findall("received before .*", acc_notice)
                 dis_date = dis_date[0].split()[-1].replace(".", "")
         except:
             status = ""

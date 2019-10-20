@@ -1,11 +1,11 @@
-import credentials
+import settings
 import gspread
 import requests
 import pandas as pd
 
-gc = gspread.authorize(credentials.google_credentials)
-sh = gc.open(credentials.quote_form_tab)
-wks= sh.worksheet(credentials.panel_sheet)
+gc = gspread.authorize(settings.google_credentials)
+sh = gc.open(settings.quote_form_tab)
+wks= sh.worksheet(settings.panel_sheet)
 panel_tab = wks.get_all_values()
 url = "https://panel.dslrentals.com/export_data?pwd=pleaseshowittome&format=html&type=support"
 html = requests.get(url).content

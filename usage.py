@@ -1,5 +1,5 @@
 from selenium import webdriver
-import credentials
+import settings
 import gspread
 import pandas as pd
 import logs
@@ -10,12 +10,12 @@ import re
 import json
 import os
 
-gc = gspread.authorize(credentials.google_credentials)
-sh = gc.open(credentials.wireless_table)
-wks1 = sh.worksheet(credentials.sheet_sprint)
+gc = gspread.authorize(settings.google_credentials)
+sh = gc.open(settings.wireless_table)
+wks1 = sh.worksheet(settings.sheet_sprint)
 data_table = wks1.get_all_values()
-sh = gc.open(credentials.main_table)
-wks = sh.worksheet(credentials.sheet_name_4g)
+sh = gc.open(settings.main_table)
+wks = sh.worksheet(settings.sheet_name_4g)
 main_table = wks.get_all_values()
 
 
@@ -33,8 +33,8 @@ def check_data_usage(main_table_4g):
             driver.get("https://mysprint.sprint.com/mysprint/pages/sl/global/login.jsp?INTNAV=Header:SignInRegister")
             username = driver.find_element_by_xpath("""//*[@id="txtLoginUsernameDL"]""")
             password = driver.find_element_by_xpath("""//*[@id="txtLoginPasswordDL"]""")
-            username.send_keys(credentials.usernameSprint)
-            password.send_keys(credentials.passwordSprint)
+            username.send_keys(settings.usernameSprint)
+            password.send_keys(settings.passwordSprint)
             username.submit()
             time.sleep(1)
             driver.get((
@@ -135,7 +135,7 @@ def check_data_usage(main_table_4g):
                         data_email.append(email)
                         data_usage.append(round(sprint_usage_df.loc[number]["usage_today"], 1))
                         data_used_today.append(round(sprint_usage_df.loc[number]["used_today"], 1))
-                        if round(sprint_usage_df.loc[number]["usage_today"], 1) > credentials.sprint_plan_limit/number_shared_lines and plan == "shared":
+                        if round(sprint_usage_df.loc[number]["usage_today"], 1) > settings.sprint_plan_limit/number_shared_lines and plan == "shared":
                             overusage = True
                         data_overusage.append(overusage)
             data = {'name': data_name, 'email': data_email, 'usage': data_usage, 'plan': data_plan, 'used_today': data_used_today, 'overusage': data_overusage}
@@ -180,8 +180,8 @@ def update_table_wireless_accounts(provider_name, main_table_4g, provider_table,
         line.value = "not found"
         client.value = ""
         modem.value = ""
-        if phone.value in credentials.special_lines:
-            line.value = credentials.special_lines[phone.value]
+        if phone.value in settings.special_lines:
+            line.value = settings.special_lines[phone.value]
         for pc in sprint_numbers_from_table:
             if pc["phone"] == phone.value:
                 line.value = pc["pc_name"]

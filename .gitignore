@@ -1,6 +1,6 @@
 # Byte-compiled / optimized / DLL files
 test-baf9445cfdbf.json
-credentials.py
+settings.py
 __pycache__/
 node_modules
 Accounts scraper

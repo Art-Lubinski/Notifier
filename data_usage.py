@@ -66,107 +66,54 @@ def update_sprint_usage():
         print(f"SCRAPER: sprint has already been updated today")
     return success
 
-
-# def update_verizon_usage():
-#     success = False
-#     lines = 0
-#     verizon_usage = 0
-#     if last_update != datetime.datetime.now().date():
-#         try:
-#             main_table_4g = model.Model.online.Main.Sheet4G().sheet.get_all_values()
-#             success = execute_js("verizon_usage_scraper.js")
-#             lines = []
-#             if success:
-#                 path1 = settings.data_folder_path + "verizon_usage.txt"
-#                 path2 = settings.data_folder_path + "verizon_lines_usage.json"
-#                 if os.path.exists(path1):
-#                     verizon_usage = open(path1, "r")
-#                     verizon_usage = verizon_usage.read().split()
-#                     if len(verizon_usage) <= 2:
-#                         verizon_usage = 0
-#                     #os.remove(path1)
-#                 if os.path.exists(path2):
-#                     temp = []
-#                     with open(path2) as f:
-#                         data = json.load(f)
-#                         for n in data:
-#                             num = n.get('name').replace('-', '')
-#                             use = n.get('usage')
-#                             use = re.sub("[^0-9.]", '', use)
-#                             temp1 = {'num': num, 'use': use}
-#                             temp.append(temp1)
-#                     #os.remove(path2)
-#                     for pc_name, provider, number, email, is_panel in zip(main_table_4g[1], main_table_4g[4], main_table_4g[17], main_table_4g[7], main_table_4g[9]):
-#                         if provider == 'VERIZON':
-#                             for n in temp:
-#                                 if number == n['num']:
-#                                     if email == "" and is_panel == "1":
-#                                         email = "panel"
-#                                     data = {'name': pc_name, 'email': email, 'usage': n['use']}
-#                                     lines.append(data)
-#                     success = True
-#                 else:
-#                     lines = 0
-#         except Exception as e:
-#             print(f"Error. Code{e}")
-#     else:
-#         print(f"SCRAPER: verizon has already been updated today")
-#     print(lines)
-#     print(verizon_usage)
-#     return success
-
+lines_list = [['9292365003', 4.917], ['9292430667', 3.328], ['9292430866', 0.018], ['9292430938', 0.0], ['9292431019', 0.0], ['9292431886', 1.183], ['9292432195', 0.0], ['9292754070', 4.843], ['9292972647', 7.652], ['9294487564', 5.335], ['9294488991', 16.165], ['9294569162', 6.594], ['9294569343', 4.533], ['9294569381', 6.048], ['9294569396', 0.0], ['9294569429', 3.054], ['9294569448', 8.124]]
 
 def update_verizon_usage():
     print("SCRAPER: updating verizon data usage from account now...")
-    success = False
     if last_update != datetime.datetime.now().date():
         print(f"SCRAPER: data usage updated last time {last_update}. Updating...")
         try:
             driver = webdriver.Chrome(executable_path=settings.webdriver_path)
             try:
                 driver.get(
-                    "https://mysprint.sprint.com/mysprint/pages/sl/global/login.jsp?INTNAV=Header:SignInRegister")
-                username = driver.find_element_by_xpath("""//*[@id="txtLoginUsernameDL"]""")
-                driver.find_element_by_xpath("""//*[@id="txtLoginPasswordDL"]""").send_keys(settings.passwordSprint)
-                username.send_keys(settings.usernameSprint)
+                    "https://sso.verizonenterprise.com/amserver/sso/login.go")
+                username = driver.find_element_by_xpath('/html/body/div[1]/div[1]/form/label[1]/input')
+                driver.find_element_by_xpath('/html/body/div[1]/div[1]/form/label[2]/input').send_keys(settings.passwordVerizon)
+                username.send_keys(settings.usernameVerizon)
                 username.submit()
-                time.sleep(1)
-                driver.get(
-                    "https://mysprint.sprint.com/mysprint/pages/secure/InterstitialCookieHandler?ICTarget=my.usage.usage.details&amp;INTNAV=ATG:HE:SeeAcctUsage")
-                sprint_usage_df = pd.DataFrame()
-                for n in range(4):
-                    table_html = driver.find_element_by_xpath(
-                        "/html/body/table/tbody/tr/td[1]/table/tbody/tr[4]/td/table/tbody/tr[15]/td/form/table").get_attribute(
-                        'outerHTML')
-                    df_list = pd.read_html(table_html)
-                    df = df_list[0].drop(df_list[0].index[0])
-                    sprint_usage_df = pd.concat([sprint_usage_df, df], sort=False)
-                    if n < 3: driver.find_element_by_link_text("Next >>").click()
-                usage = sprint_usage_df.iloc[:, [3, 11]]
-                usage.insert(0, 'Date', datetime.datetime.now().strftime("%m/%d/%y"))
-                usage.columns = ['Date', 'Number', 'Usage']
-                usage.set_index('Number', inplace=True)
-                import random
-                usage["Usage"] = usage["Usage"].astype(float)
-                usage.index = usage.index.map(str)
-                cursor.execute(
-                    r"SELECT Number, ID FROM MobileNumbers WHERE AccountID in (select ID from MobileAccounts where Provider = 'Sprint')")
-                map_df = pd.DataFrame([[x[0], x[1]] for x in cursor.fetchall()], columns=["Number", 'ID']).set_index(
-                    'Number')
-                usage_id_df = pd.merge(map_df, usage, left_index=True, right_index=True)
+                time.sleep(15)
+                driver.get("https://b2b.verizonwireless.com/sms/amsecure/unbilledusage/allLinesUsage.go?mtn=929-236-5003")
+                time.sleep(10)
+                usages = driver.find_elements_by_class_name("usage")
+                numbers = driver.find_elements_by_class_name("mtn")
+                lines_list = []
+                for number, usage in zip(numbers, usages):
+                    number = number.text
+                    usage = usage.text
+                    lines_list.append([number.replace("-",""),float(usage.replace(" GB", ""))])
+                print(lines_list)
+                df = pd.DataFrame(lines_list, columns=['Number', 'Usage'])
+                df.set_index('Number', inplace=True)
+                df.insert(0, 'Date', datetime.datetime.now().strftime("%m/%d/%y"))
+                df.index = df.index.map(str)
+                try:
+                    cursor.execute("SELECT Number, ID FROM MobileNumbers WHERE AccountID in (select ID from MobileAccounts where Provider = 'Verizon')")
+                except Exception as e:
+                    print(f"SQL REQUEST: pyodbc can't complete request")
+                map_df = pd.DataFrame([[x[0], x[1]] for x in cursor.fetchall()], columns=["Number", 'ID']).set_index('Number')
+                usage_id_df = pd.merge(map_df, df, left_index=True, right_index=True)
                 usage_id_df.reset_index(drop=True, inplace=True)
                 engine = sqlalchemy.create_engine(settings.sql_alchemy)
                 usage_id_df.to_sql("UsageHistory", engine, if_exists='append', index=False)
                 success = True
-                driver.quit()
-                print("SCRAPER: Sprint data usage scrapped and database updated")
+                print("SCRAPER: Verizon data usage scrapped and database updated")
                 return success
             except Exception as e:
-                print(f"SCRAPER: some error raised inside Sprint account. Code: {e}")
+                print(f"SCRAPER: some error raised inside Verizon account. Code: {e}")
                 return success
         except Exception as e:
             print(f"SELENIUM: cannot create webdriver. Code: {e}")
     else:
-        print(f"SCRAPER: sprint has already been updated today")
+        print(f"SCRAPER: verizon has already been updated today")
     return success
 

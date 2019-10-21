@@ -51,6 +51,10 @@ server_port = 587
 notify_from_email = server_username
 to_email = ["artsiom.lubinsky@gmail.com"]
 
+# Verizon settings
+usernameVerizon = "WORLDINC4G"
+passwordVerizon = "W663300w"
+
 
 # Sprint settings
 usernameSprint = "worldintercom1"

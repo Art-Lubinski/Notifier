@@ -9,6 +9,7 @@ import re
 
 log = logs.write_to_balance_tracker
 
+
 def scrape_verizon_wireless(username, password):
     log("SCRAPER: scraping Verizon wireless")
     scraped_accounts = []
@@ -89,6 +90,7 @@ def scrape_verizon_wireless(username, password):
         log(f"STATUS: scraping VZ WIRELESS failed Code: {e}")
     return success, scraped_accounts
 
+
 def scrape_comcast(username,password):
     log("scraping COMCAST now..")
     success = False
@@ -152,6 +154,7 @@ def scrape_comcast(username,password):
         log(f"SCRAPER: failure update COMCAST. Code {e}")
         driver.quit()
     return success, scraped_accounts
+
 
 def scrape_verizon_dsl(username, password, secret, line):
     success = False
@@ -233,6 +236,7 @@ def scrape_verizon_dsl(username, password, secret, line):
     log(f"INFO: {line} balance: {balance} past due: {prev_charge} charged: {curr_charge} payment: {rec_payment} status: {status} due date: {due_date} termination: {dis_date}")
     return success, scraped_account
 
+
 def scrape_att(username, password, line):
     success = False
     due_date = ""
@@ -242,7 +246,6 @@ def scrape_att(username, password, line):
     account = []
     log("SCRAPER: scraping ATT")
     try:
-        #driver = get_chromedriver(use_proxy=True)
         driver = webdriver.Chrome(executable_path=r"C:\Program Files\Notifier\chromedriver.exe")
         time.sleep(2)
         driver.get(r"https://www.att.com/my/#/login")
@@ -297,7 +300,8 @@ def scrape_att(username, password, line):
         log(f"SCRAPER: scraping ATT failed. Code: {s}")
     return success, account
 
-def scrape_spectrum(username, password, line):
+
+def scrape_spectrum(username, password):
     success = False
     due_date = ""
     past_due = ""

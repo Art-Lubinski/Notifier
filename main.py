@@ -24,10 +24,10 @@ import data_usage
 # sold_today = db.get_sold_lines_today()
 # customers_to_close = db.get_customers(date_yesterday)
 # customers_to_remind_today = db.get_customers(date_today)
-# customers_to_remind_two_days = db.get_customers(date_in_two_days)
 
-# data_usage.update_sprint_usage()
-data_usage.update_verizon_usage()
+data_usage.update_sprint_usage()
+
+#data_usage.update_verizon_usage()
 #
 # try:
 #     email_conn = smtplib.SMTP(settings.server_host, settings.server_port)

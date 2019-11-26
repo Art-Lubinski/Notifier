@@ -1,3 +1,4 @@
+import spreadsheets as sheets
 from selenium import webdriver
 import logs
 import time
@@ -6,14 +7,12 @@ import os
 import zipfile
 from selenium import webdriver
 import re
+reg = "received before .*"
 
 log = logs.write_to_balance_tracker
 
-
 def scrape_verizon_wireless(username, password):
-    log("SCRAPER: scraping Verizon wireless")
     scraped_accounts = []
-    success = False
     try:
         driver = webdriver.Chrome(executable_path=r"C:\Program Files\Notifier\chromedriver.exe")
         driver.get(r"https://sso.verizonenterprise.com/amserver/sso/login.go")
@@ -26,17 +25,14 @@ def scrape_verizon_wireless(username, password):
         driver.find_element_by_xpath("/html/body/div[1]/div[1]/form/button").click()
         time.sleep(40)
         driver.get(r"https://b2b.verizonwireless.com/epam/app/ng/secure/entry.go#/lineSelection")
-        log("SCRAPER: login successful")
+        #log("SCRAPER: login successful")
         time.sleep(15)
         try:
             status1 = driver.find_element_by_xpath(
-                "/html/body/div[4]/div[2]/div/div/div/div/div[3]/div[2]/div/div/div/div/div[3]/div[1]/div/div[2]/div[2]/div/div[14]/div/div/div[3]/div/span").text
-            status2 = driver.find_element_by_xpath(
-                "/html/body/div[4]/div[2]/div/div/div/div/div[3]/div[2]/div/div/div/div/div[3]/div[1]/div/div[2]/div[2]/div/div[21]/div/div/div[3]/div/span").text
+                "/html/body/div[4]/div[2]/div/div/div/div/div[3]/div[2]/div/div/div/div/div[3]/div[1]/div/div[2]/div[2]/div/div[1]/div/div/div[3]/div/span").text
         except:
             status1 = ""
-            status2 = ""
-            log("unknown if both accounts are active or suspended")
+            #log("unknown if both accounts are active or suspended")
         driver.get(r"https://epb.verizonwireless.com/epass/reporting/main.go#/viewInvoices")
         log("SCRAPER: checking Invoices")
         time.sleep(15)
@@ -45,34 +41,34 @@ def scrape_verizon_wireless(username, password):
                 balance = float(driver.find_element_by_xpath("/html/body/div[7]/div/div/div[5]/div[4]/div[1]/div[3]/div[1]/div[2]/h1").text.replace("$","").replace(",",""))
             except Exception as e:
                 balance = ""
-                log(f"SCRAPER: balance not found. Code {e}")
+                #log(f"SCRAPER: balance not found. Code {e}")
             try:
                 balance_forward = float(driver.find_element_by_xpath("/html/body/div[7]/div/div/div[5]/div[4]/div[3]/div[3]/div[2]/table/tbody/tr[3]/td[2]").text.replace("$","").replace(",",""))
             except Exception as e:
                 balance_forward = ""
-                log(f"SCRAPER: balance forward not found. Code {e}")
+                #log(f"SCRAPER: balance forward not found. Code {e}")
             try:
                 curr_charges = float(driver.find_element_by_xpath("/html/body/div[7]/div/div/div[5]/div[4]/div[3]/div[3]/div[2]/table/tbody/tr[9]/td[2]").text.replace("$","").replace(",",""))
             except Exception as e:
                 curr_charges = ""
-                log(f"SCRAPER: current charge not found. Code {e}")
+                #log(f"SCRAPER: current charge not found. Code {e}")
             try:
                 rec_payment = float(driver.find_element_by_xpath("/html/body/div[7]/div/div/div[5]/div[4]/div[3]/div[3]/div[2]/table/tbody/tr[2]/td[2]").text.replace("$","").replace("-","").replace(",",""))
             except Exception as e:
                 rec_payment = ""
-                log(f"SCRAPER: recent payment not found. Code {e}")
+                #log(f"SCRAPER: recent payment not found. Code {e}")
             try:
                 due_date = driver.find_element_by_xpath("/html/body/div[7]/div/div/div[5]/div[4]/div[3]/div[3]/div[2]/table/tbody/tr[10]/td[1]/div[2]").text
-            except:
+            except Exception as e:
                 due_date = ""
-                log(f"SCRAPER: due date not found. Code {e}")
+                #log(f"SCRAPER: due date not found. Code {e}")
             if due_date != "" and "Due by" in due_date :
                 due_date = due_date.replace("Due by ", "").replace(",", "")
                 due_date = datetime.strptime(due_date, '%b %d %Y')
                 due_date = due_date.strftime("%d/%m/%Y")
             if acc_number == 1: status = status1
-            else: status = status2
-            account = [f"VZ-{acc_number}", balance, balance_forward, curr_charges, rec_payment, status, due_date, ""]
+            else: status = ""
+            account = [f"VZ-{acc_number}", balance,"", balance_forward, curr_charges, rec_payment, status, due_date, ""]
             scraped_accounts.append(account)
             if acc_number == 1:
                 try:
@@ -82,17 +78,14 @@ def scrape_verizon_wireless(username, password):
                     time.sleep(5)
                 except:
                     log("SCRAPER: second account not found!")
+            log(f"INFO: Account: {acc_number} Balance: {balance} BlanceForw: {balance_forward} CurrentCharges: {curr_charges} Status: {status}")
         driver.quit()
-        success = True
-        log("SCRAPER: scraping VZ WIRELESS completed successfully")
+        #log("SCRAPER: scraping VZ WIRELESS completed successfully")
     except Exception as e:
-        driver.quit()
         log(f"STATUS: scraping VZ WIRELESS failed Code: {e}")
-    return success, scraped_accounts
-
+    return scraped_accounts
 
 def scrape_comcast(username,password):
-    log("scraping COMCAST now..")
     success = False
     scraped_accounts = []
     try:
@@ -107,7 +100,7 @@ def scrape_comcast(username,password):
         pass_filed.send_keys(u'\ue007')
         time.sleep(2)
         driver.find_element_by_xpath("/html/body/div/div/div/div/div[2]/p/a").click()
-        log("SCRAPER: login successful COMCAST")
+        #log("SCRAPER: login successful COMCAST")
         time.sleep(10)
         accounts = [["GA-Comcast",1],["IL-Comcast",2],["TX-Comcast",3],["WA-Comcast",4]]
         for account in accounts:
@@ -152,90 +145,96 @@ def scrape_comcast(username,password):
         log("SCRAPER: successfully updated COMCAST")
     except Exception as e:
         log(f"SCRAPER: failure update COMCAST. Code {e}")
-        driver.quit()
     return success, scraped_accounts
 
-
 def scrape_verizon_dsl(username, password, secret, line):
-    success = False
-    scraped_account = []
-    log(f"SCRAPER: scraping {line}")
-    try:
-        driver = webdriver.Chrome(executable_path=r"C:\Program Files\Notifier\chromedriver.exe")
-        driver.delete_all_cookies()
-        driver.get(r"https://www.verizon.com/home/myverizon/")
-        time.sleep(5)
-        driver.switch_to.frame(driver.find_element_by_id("DOMWindowIframe"))
-        username_e = driver.find_element_by_xpath("//*[@id='IDToken1']")
-        password_e = driver.find_element_by_xpath("//*[@id='IDToken2']")
-        submit = driver.find_element_by_xpath("//*[@id='login-submit']")
-        username_e.send_keys(username)
-        password_e.send_keys(password)
-        submit.click()
-        time.sleep(5)
+    log(f"SCRAPER: Line: {line}")
+    while(True):
+        status = "Active"
         try:
-            secret_e = driver.find_element_by_id("IDToken1")
-            secret_e.send_keys(secret)
-            driver.find_element_by_id("otherButton").click()
-            time.sleep(15)
-        except:
-            log("SCRAPER: secret key page doesn't exist in %s account" %line)
-        try:
-            driver.execute_script('document.querySelector("#remind_close").click()')
-            time.sleep(20)
-        except:
-            log("SCRAPER: no email check in %s account" %line)
-        try:
-            acc_notice = driver.execute_script('return document.querySelector("#_idJsp0 > p").textContent;')
-            dis_date = ""
-            status = "Active"
-            if "have been suspended" in acc_notice:
-                status = "Suspended"
-                dis_date = re.findall("received before .*", acc_notice)
-                dis_date = dis_date[0].split()[-1].replace(".", "")
-        except:
-            status = ""
-            dis_date = ""
-        driver.get(r"https://www.verizon.com/foryourbusiness/billview/billing/mybill")
-        time.sleep(15)
-        try:
-            balance = driver.execute_script('return document.querySelector("#ghfbodycontent > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > div.w_bill-outer > div > div.bill-value > span").textContent;')
-            balance = float(balance)
-        except:
-            balance = ""
-        try:
-            due_date = driver.execute_script(
-                'return document.querySelector("#ghfbodycontent > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > div.w_bill-outer > div > div.bill-due-date").textContent;')
-            due_date = due_date.replace("By ", "").replace(",", "")
-            due_date = datetime.strptime(due_date, '%B %d %Y')
-            due_date = due_date.strftime("%d/%m/%Y")
-        except:
-            due_date = ""
-        try:
-            curr_charge = driver.execute_script('return document.querySelector("#ghfbodycontent > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > ul > li:nth-child(3) > div > div.column.tiny-4.bill-value").textContent;')
-            curr_charge = float(curr_charge.strip().replace("$", ""))
-        except:
-            curr_charge = ""
-        try:
-            rec_payment = driver.execute_script('return document.querySelector("#ghfbodycontent > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > ul > li:nth-child(5) > div > div.column.tiny-4.bill-value").textContent;')
-            rec_payment = float(rec_payment.strip().replace("$", ""))
-        except:
-            rec_payment = ""
-        try:
-            prev_charge = driver.execute_script('return document.querySelector("#ghfbodycontent > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > ul > li:nth-child(1) > div > div.column.tiny-4.bill-value").textContent;')
-            prev_charge = float(prev_charge.strip().replace("$", ""))
-        except:
-            prev_charge = ""
-        scraped_account = [line, balance, prev_charge, curr_charge,rec_payment, status, due_date, dis_date]
-        driver.quit()
-        success = True
-        log(f"SCRAPER: scraping {line} completed successfully")
-    except Exception as e:
-        log(f"SCRAPER: scraping {line} failed...%s" %e)
-        driver.quit()
-    log(f"INFO: {line} balance: {balance} past due: {prev_charge} charged: {curr_charge} payment: {rec_payment} status: {status} due date: {due_date} termination: {dis_date}")
-    return success, scraped_account
+            driver = webdriver.Chrome(executable_path=r"C:\Program Files\Notifier\chromedriver.exe")
+            driver.get(r"https://www.verizon.com/home/myverizon/")
+            time.sleep(5)
+            driver.switch_to.frame(driver.find_element_by_id("DOMWindowIframe"))
+            username_e = driver.find_element_by_xpath("//*[@id='IDToken1']")
+            password_e = driver.find_element_by_xpath("//*[@id='IDToken2']")
+            submit = driver.find_element_by_xpath("//*[@id='login-submit']")
+            username_e.send_keys(username)
+            password_e.send_keys(password)
+            submit.click()
+            time.sleep(10)
+            try:
+                secret_e = driver.find_element_by_id("IDToken1")
+                secret_e.send_keys(secret)
+                driver.find_element_by_id("otherButton").click()
+                time.sleep(15)
+            except:
+                print("SCRAPER: no email check in %s account" %line)
+                #log("SCRAPER: secret key page doesn't exist in %s account" %line)
+            try:
+                driver.execute_script('document.querySelector("#remind_close").click()')
+                time.sleep(5)
+            except:
+                print("SCRAPER: no email check in %s account" %line)
+                #log("SCRAPER: no email check in %s account" %line)
 
+            try:
+                acc_notice = driver.execute_script('return document.querySelector("#_idJsp0 > p").textContent;')
+                dis_date = ""
+                if "have been suspended" in acc_notice:
+                    status = "Suspended"
+                    dis_date = re.findall(reg, acc_notice)
+                    dis_date = dis_date[0].split()[-1].replace(".", "")
+            except:
+                dis_date = ""
+            driver.get(r"https://www.verizon.com/foryourbusiness/billview/billing/mybill")
+            time.sleep(15)
+            try:
+                balance = driver.execute_script('return document.querySelector("#ghfbody> table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > div.w_bill-outer > div > div.bill-value > span").textContent;')
+                balance = float(balance)
+            except Exception as e:
+                balance = 0
+                #log(f"SCRAPER: balance  not found. Code {e}")
+            try:
+                past_due_text  = driver.execute_script('return document.querySelector("#ghfbody > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > div.w_bill-outer > div > div.bill-message").textContent;')
+                past_due = float(past_due_text.split()[-2].replace("$",""))
+            except Exception as e:
+                past_due = ""
+                #log(f"SCRAPER: past due  not found. Code {e}")
+            try:
+                due_date = driver.execute_script(
+                    'return document.querySelector("#ghfbody > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > div.w_bill-outer > div > div.bill-due-date").textContent;')
+                due_date = due_date.replace("By ", "").replace(",", "")
+                due_date = datetime.strptime(due_date, '%B %d %Y')
+                due_date = due_date.strftime("%m/%d/%Y")
+            except:
+                due_date = ""
+            try:
+                curr_charge = driver.execute_script('return document.querySelector("#ghfbody > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > ul > li:nth-child(3) > div > div.column.tiny-4.bill-value").textContent;')
+                curr_charge = float(curr_charge.strip().replace("$", "").replace(" ", ""))
+            except:
+                curr_charge = ""
+            print(f"Current charge: {curr_charge}")
+            try:
+                rec_payment = driver.execute_script('return document.querySelector("#ghfbody > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > ul > li:nth-child(5) > div > div.column.tiny-4.bill-value").textContent;')
+                rec_payment = float(rec_payment.strip().replace("$", ""))
+            except:
+                rec_payment = ""
+                "/html/body/div[2]/div/table/tbody/tr/td[2]/div[1]/main/div[1]/div/div/div/div[1]/div[1]/div/div[6]document.querySelector("#ghfbody > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > div.w_bill-outer > div > div.bill-message")"
+            try:
+                prev_charge = driver.execute_script('return document.querySelector("#ghfbody > table > tbody > tr > td:nth-child(2) > div:nth-child(1) > main > div.row.padding-vert-zero > div > div > div > div.active > ul > li:nth-child(1) > div > div.column.tiny-4.bill-value").textContent;')
+                prev_charge = float(prev_charge.strip().replace("$", ""))
+            except:
+                prev_charge = ""
+            scraped_account = [line, balance, past_due, prev_charge, curr_charge,rec_payment, status, due_date, dis_date]
+            driver.quit()
+            if curr_charge != "":
+                log(f"INFO: {line} balance: {balance} pastdue: {past_due} prevcharge: {prev_charge} charged: {curr_charge} payment: {rec_payment} status: {status} due date: {due_date} termination: {dis_date}")
+                break
+            print("404 ERROR. Trying access account again.")
+        except Exception as e:
+            log(f"SCRAPER: scraping {line} failed.%s" %e)
+    return scraped_account
 
 def scrape_att(username, password, line):
     success = False
@@ -244,7 +243,6 @@ def scrape_att(username, password, line):
     balance = ""
     curr_charge = ""
     account = []
-    log("SCRAPER: scraping ATT")
     try:
         driver = webdriver.Chrome(executable_path=r"C:\Program Files\Notifier\chromedriver.exe")
         time.sleep(2)
@@ -300,8 +298,7 @@ def scrape_att(username, password, line):
         log(f"SCRAPER: scraping ATT failed. Code: {s}")
     return success, account
 
-
-def scrape_spectrum(username, password):
+def scrape_spectrum(username, password, line):
     success = False
     due_date = ""
     past_due = ""

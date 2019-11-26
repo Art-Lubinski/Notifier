@@ -9,9 +9,8 @@ folder_path = __current_dir[:-11]
 account_scraper_folder_path = folder_path + "Accounts scraper/"
 data_folder_path = folder_path + "Data/"
 sqlconnection_string = r'DSN=DSLRENTALS; UID=Test;PWD=Mp2664311'
-webdriver_path = r"/Users/artlubinski/PycharmProjects/Notifier/chromedriver-2"
+webriver_path = r"/Users/artlubinski/PycharmProjects/SprintScraper/chromedriver-2"
 sql_alchemy = "mssql+pyodbc://Test:Mp2664311@DSLRENTALS"
-print("helo", webdriver_path)
 if sys.platform == "win32":
     folder_path = folder_path.replace("/","\\")
     account_scraper_folder_path = account_scraper_folder_path.replace("/","\\")
@@ -51,10 +50,6 @@ server_port = 587
 notify_from_email = server_username
 to_email = ["artsiom.lubinsky@gmail.com"]
 
-# Verizon settings
-usernameVerizon = "WORLDINC4G"
-passwordVerizon = "W663300w"
-
 
 # Sprint settings
 usernameSprint = "worldintercom1"
@@ -72,6 +67,7 @@ special_lines = {"9178228005": "Art", "9177676186": "Work", "9292617744": "Anton
 paypal = "info@worldintercom.net"
 btc = "https://pastebin.com/5pg6S7U2"
 
+webdriver_path = r"C:\Program Files\Notifier\chromedriver.exe"
 
 
 
